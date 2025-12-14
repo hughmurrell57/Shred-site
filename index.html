@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>6-Week Body + Face Shred</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body { background:#0f0f0f; color:#fff; font-family:Arial; padding:15px; }
+h1,h2,h3 { color:#00ffae; }
+.section { border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:8px; }
+button { padding:8px 12px; margin:5px; border:none; border-radius:5px; cursor:pointer; }
+.hard { background:#c0392b; color:white; }
+.medium { background:#e67e22; color:white; }
+.light { background:#2ecc71; color:black; }
+.missed { background:#555; color:white; }
+.bad { background:#b71c1c; color:white; }
+.snack { background:#6a1b9a; color:white; }
+.panic { background:#000; color:#ff4d4d; padding:10px; text-align:center; font-weight:bold; }
+img { width:100%; max-width:300px; border-radius:8px; margin:10px 0; }
+.check { transform:scale(1.3); margin-right:8px; }
+input { padding:6px; margin:5px 0; width:100%; }
+.photo { max-width:150px; margin:5px; border:1px solid #333; }
+</style>
+</head>
+
+<body>
+
+<h1>6-Week No-Gym Body + Face Shred</h1>
+<div id="panicStatus"></div>
+
+<!-- BODY TRAINING -->
+<div class="section">
+<h2>🏋️ Body Training Log</h2>
+<div id="days"></div>
+</div>
+
+<!-- FACE -->
+<div class="section">
+<h2>🧠 Daily Face Looksmaxing</h2>
+<label><input type="checkbox" class="check"> AM: Wash face + moisturise</label><br>
+<label><input type="checkbox" class="check"> PM: Wash face + moisturise</label><br>
+
+<h3>Chin Tucks (15)</h3>
+<img src="https://exrx.net/Articulations/Spine/NeckChinTuck">
+
+<h3>Neck Extensions (15)</h3>
+<img src="https://exrx.net/Articulations/Spine/NeckExtension">
+
+<label><input type="checkbox" class="check"> Maintain good posture all day</label>
+</div>
+
+<!-- EXERCISES -->
+<div class="section">
+<h2>📘 Body Exercise Guide</h2>
+<h3>Push-Up</h3><img src="https://exrx.net/WeightExercises/PectoralSternal/BWPushup">
+<h3>Plank</h3><img src="https://exrx.net/WeightExercises/RectusAbdominis/BWPlank">
+<h3>Leg Raise</h3><img src="https://exrx.net/WeightExercises/HipFlexors/BWLyingLegRaise">
+<h3>Squat</h3><img src="https://exrx.net/WeightExercises/Quadriceps/BWSquat">
+</div>
+
+<!-- DIET -->
+<div class="section">
+<h2>🍽 Diet Damage Control</h2>
+<button class="bad" onclick="addStrike('Bad Dinner')">🍕 Bad Dinner</button>
+<button class="snack" onclick="addStrike('Accidental Snack')">🍦 Accidental Snack</button>
+<p id="dietStatus">No diet issues logged</p>
+</div>
+
+<!-- PROGRESS -->
+<div class="section">
+<h2>📸 Progress Tracking</h2>
+
+<h3>Upload Progress Photo</h3>
+<input type="file" accept="image/*" onchange="savePhoto(event)">
+<div id="photos"></div>
+
+<h3>Body Measurements</h3>
+<input id="weight" placeholder="Weight (kg)">
+<input id="waist" placeholder="Waist (cm)">
+<button onclick="saveMetrics()">Save</button>
+<ul id="metrics"></ul>
+</div>
+
+<script>
+let days=[], strikes=0, panic=false;
+let photos=JSON.parse(localStorage.getItem("photos")||"[]");
+let metrics=JSON.parse(localStorage.getItem("metrics")||"[]");
+
+for(let i=1;i<=42;i++) days.push({day:i,status:"None"});
+
+function render(){
+let html="";
+days.forEach((d,i)=>{
+html+=`
+<div>
+<b>Day ${d.day}</b><br>
+<button class="hard" onclick="setDay(${i},'Hard')">Hard</button>
+<button class="medium" onclick="setDay(${i},'Medium')">Medium</button>
+<button class="light" onclick="setDay(${i},'Light')">Light</button>
+<button class="missed" onclick="setDay(${i},'Missed')">Missed</button>
+<p>Status: ${d.status}</p>
+</div>`;
+});
+document.getElementById("days").innerHTML=html;
+document.getElementById("panicStatus").innerHTML =
+panic ? "<div class='panic'>🚨 PANIC WEEK ACTIVE — ALL SESSIONS HARD</div>"
+      : `<p>Strikes: ${strikes}/5</p>`;
+
+document.getElementById("photos").innerHTML =
+photos.map(p=>`<img src="${p}" class="photo">`).join("");
+
+document.getElementById("metrics").innerHTML =
+metrics.map(m=>`<li>${m.date} — ${m.weight}kg / ${m.waist}cm</li>`).join("");
+}
+
+function setDay(i,status){
+days[i].status=status;
+if(status==="Missed") addStrike("Missed Training");
+if(panic && days[i+1]) days[i+1].status="Hard";
+render();
+}
+
+function addStrike(reason){
+strikes++;
+document.getElementById("dietStatus").innerText = reason+" logged → Strike added";
+if(strikes>=3) panic=true;
+render();
+}
+
+function savePhoto(e){
+let r=new FileReader();
+r.onload=()=>{ photos.push(r.result); localStorage.setItem("photos",JSON.stringify(photos)); render(); };
+r.readAsDataURL(e.target.files[0]);
+}
+
+function saveMetrics(){
+metrics.push({
+date:new Date().toLocaleDateString(),
+weight:document.getElementById("weight").value,
+waist:document.getElementById("waist").value
+});
+localStorage.setItem("metrics",JSON.stringify(metrics));
+render();
+}
+
+render();
+</script>
+
+</body>
+</html>
